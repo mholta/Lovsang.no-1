@@ -21,39 +21,54 @@
 
 
 /* Parse a ChordPro template */
-function parseChordPro(template, transpose) {
+function parseChordPro(template, key, transpose) {
 	if( typeof transpose == "undefined" ) {
 		transpose = false;
 	}
+	const all_keys = ["A", "Bb", "B", "Cb", "C", "C#", "Db", "D", "Eb", "E", "F", "F#", "Gb", "G", "Ab"];
+	const sep_keys = [["A", "Bb", "B", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab"],["A", "Bb", "Cb", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"]];
+	const notes = [['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'], ['A', 'Bb', 'Cb', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']];
 	var chordregex= /\[([^\]]*)\]/;
 	var inword    = /[a-z]$/;
 	var buffer    = [];
 	var chords    = [];
 	var last_was_lyric = false;
-	var transpose_chord = function( chord, trans ) {
-		var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
+	var is_bkey = function(k){
+		const bkey = [false, true, false, true, false, false, true, false, true, false, true, false, true, false, true];
+		return bkey[all_keys.indexOf(k)];
+	}
+	var transposed_key = function(k, transp){
+		const value = [0, 1, 2, 2, 3, 4, 4, 5, 6, 7, 8, 9, 9, 10, 11];
+		var key_value = value[all_keys.indexOf(k)]+transp;
+		while(key_value<1) key_value+=12;
+		while(key_value>12) key_value-=12;
+		return sep_keys[is_bkey(k)?1:0][key_value];
+	}
+	var transpose_chord = function(chord, trans, use_b) {
 		var regex = /([A-Z][b#]?)/g;
 		var modulo = function(n, m) {
 				return ((n % m) + m) % m;
 		}
 		return chord.replace( regex, function( $1 ) {
-			if( $1.length > 1 && $1[1] == 'b' ) {
+			/**if( $1.length > 1 && $1[1] == 'b' ) {
 				if( $1[0] == 'A' ) {
 					$1 = "G#";
 				} else {
 					$1 = String.fromCharCode($1[0].charCodeAt() - 1) + '#';
 				}
-			}
-			var index = notes.indexOf( $1 );
+			}**/
+			var index = notes[0].indexOf( $1 );
+			if( index == -1 ) index = notes[1].indexOf( $1 );
 			if( index != -1 ) {
-				index = modulo( ( index + trans ), notes.length );
-				return notes[index];
+				index = modulo( ( index + trans ), notes[0].length );
+				return notes[use_b?1:0][index];
 			}
 			return 'XX';
 		});
 	}
 	if (!template) return "";
-
+	var transposed_is_b = is_bkey(transposed_key(key, transpose));
+	console.log("transposed_key:" + transposed_key(key,transpose) + ", transposed_is_b:" + transposed_is_b);
 	template.split("\n").forEach(function(line, linenum) {
 		/* Comment, ignore */
 		if (line.match(/^#/)) {
@@ -104,7 +119,7 @@ function parseChordPro(template, transpose) {
 					/* Chords */
 					chord = word.replace(/[[]]/, "");
 					if(transpose !== false) {
-						chord = transpose_chord(chord, transpose);
+						chord = transpose_chord(chord, transpose, transposed_is_b);
 					}
 					chordlen = chord.length;
 					chords = chords + '<span class="chord" data-original-val="' + chord + '">' + chord + '</span>';
@@ -159,19 +174,4 @@ function parseChordPro(template, transpose) {
 		buffer.push(line + "<br/>");
 	}, this);
 	return buffer.join("\n");
-}
-
-function readTextFile(file) {
-    var rawFile = new XMLHttpRequest();
-    var allText = "";
-    rawFile.open("GET", file);
-    rawFile.onreadystatechange = function () {
-        if(rawFile.readyState === 4) {
-            if(rawFile.status === 200 || rawFile.status == 0) {
-                allText = rawFile.responseText;
-            }
-        }
-    }
-    rawFile.send(null);
-    return allText;
 }
