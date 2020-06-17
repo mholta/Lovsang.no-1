@@ -69,7 +69,14 @@ function parseChordPro(template, key, transpose) {
 	if (!template) return "";
 	var transposed_is_b = is_bkey(transposed_key(key, transpose));
 	console.log("transposed_key:" + transposed_key(key,transpose) + ", transposed_is_b:" + transposed_is_b);
+	var passed_blank_line = false;
 	template.split("\n").forEach(function(line, linenum) {
+		if (!passed_blank_line){
+			if (line == ""){
+				passed_blank_line = true;
+			}
+			return "";
+		}
 		/* Comment, ignore */
 		if (line.match(/^#/)) {
 			return "";
