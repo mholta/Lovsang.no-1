@@ -2,17 +2,17 @@ The Blessing
 Kari Jobe
 Key: B
 
-Verse
+Verse:
 [B]The Lord bless you[E] and keep you
 [B/D#]Make His face shine u[F#sus]pon you
 And be gracious to [G#m]you
 The Lord turn His[E] face toward you
 [B/D#]And [F#sus]give you [B]peace 
 
-Interlude
+Interlude:
 [| B / / / | Bsus / / / |]
 REPEAT VERSE
-Chorus
+Chorus:
 [G#m7]A  - [E]men
 A[B]men, A[F#]men
 [G#m7]A  - [E]men
@@ -20,10 +20,10 @@ A[B]men, A[F#]men
 
 REPEAT VERSE
 REPEAT CHORUS X2
-Interlude
+Interlude:
 [| G#m7 / / / | E / / / | B / / / | F# / / / |]
 
-Bridge 1
+Bridge 1:
 May His [G#m7]favor be upon you
 And a [E]thousand generations
 And your [B]family and your children
@@ -36,7 +36,7 @@ And their [F#]children and their children
 
 REPEAT BRIDGE 1
 
-Bridge 2
+Bridge 2:
 May His [G#m7]presence go before you
 And [E]behind you and beside you
 All a[B]round you and within you
@@ -47,7 +47,7 @@ In your [E]coming and your going
 In your [B]weeping and rejoicing 
 He is [F#]for you He is for you
 
-Tag
+Tag:
 He is [G#m7]for you He is for you
 He is [E]for you He is for you
 He is [B]for you He is for you
@@ -55,7 +55,7 @@ He is [F#]for you He is for you
 
 REPEAT CHORUS
 
-Bridge 3
+Bridge 3:
 May His [G#m7]favor be upon you
 And a [E]thousand generations
 And your [B]family and your children
