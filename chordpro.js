@@ -81,6 +81,10 @@ function parseChordPro(template, key, transpose) {
 		if (line.match(/^#/)) {
 			return "";
 		}
+		if (line.charAt(line.length-1)==":"){
+			buffer.push('<span class="heading">'+line+'</span><br>');
+			return "";
+		}
 		/* Chord line */
 		if (line.match(chordregex)) {
 			if( !buffer.length ) {
