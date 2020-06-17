@@ -21,9 +21,12 @@
 
 
 /* Parse a ChordPro template */
-function parseChordPro(template, key, transpose) {
+function parseChordPro(template, key, transpose, only_lyrics) {
 	if( typeof transpose == "undefined" ) {
 		transpose = false;
+	}
+	if( typeof only_lyrics == "undefined" ) {
+		only_lyrics = false;
 	}
 	const all_keys = ["A", "Bb", "B", "Cb", "C", "C#", "Db", "D", "Eb", "E", "F", "F#", "Gb", "G", "Ab"];
 	const sep_keys = [["A", "Bb", "B", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab"],["A", "Bb", "Cb", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"]];
@@ -69,9 +72,20 @@ function parseChordPro(template, key, transpose) {
 	if (!template) return "";
 	var transposed_is_b = is_bkey(transposed_key(key, transpose));
 	console.log("transposed_key:" + transposed_key(key,transpose) + ", transposed_is_b:" + transposed_is_b);
+	var passed_blank_line = false;
 	template.split("\n").forEach(function(line, linenum) {
+		if (!passed_blank_line){
+			if (line == ""){
+				passed_blank_line = true;
+			}
+			return "";
+		}
 		/* Comment, ignore */
 		if (line.match(/^#/)) {
+			return "";
+		}
+		if (line.charAt(line.length-1)==":"){
+			buffer.push('<span class="heading">'+line+'</span><br>');
 			return "";
 		}
 		/* Chord line */
@@ -101,7 +115,8 @@ function parseChordPro(template, key, transpose) {
 				   * Apply padding.  We never want two chords directly adjacent,
 				   * so unconditionally add an extra space.
 				   */
-					if (word && word.length < chordlen) {
+				   	if (only_lyrics) {
+					} else if (word && word.length < chordlen) {
 						chords = chords + "&nbsp;";
 						lyrics = (dash == 1) ? lyrics + "-&nbsp;" : lyrics + "&nbsp&nbsp;";
 						for (i = chordlen - word.length - dash; i != 0; i--) {
@@ -125,7 +140,9 @@ function parseChordPro(template, key, transpose) {
 					chords = chords + '<span class="chord" data-original-val="' + chord + '">' + chord + '</span>';
 				}
 			}, this);
-			buffer.push('<span class="line">' + chords + "<br/>\n" + lyrics + "</span><br/>");
+			buffer.push('<span class="line">');
+			if(!only_lyrics) buffer.push(chords + "<br/>\n");
+			buffer.push(lyrics + "</span><br/>");
 			return;
 		}
 		/* Commands, ignored for now */
