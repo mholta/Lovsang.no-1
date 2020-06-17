@@ -21,9 +21,12 @@
 
 
 /* Parse a ChordPro template */
-function parseChordPro(template, key, transpose) {
+function parseChordPro(template, key, transpose, only_lyrics) {
 	if( typeof transpose == "undefined" ) {
 		transpose = false;
+	}
+	if( typeof only_lyrics == "undefined" ) {
+		only_lyrics = false;
 	}
 	const all_keys = ["A", "Bb", "B", "Cb", "C", "C#", "Db", "D", "Eb", "E", "F", "F#", "Gb", "G", "Ab"];
 	const sep_keys = [["A", "Bb", "B", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab"],["A", "Bb", "Cb", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"]];
@@ -112,7 +115,8 @@ function parseChordPro(template, key, transpose) {
 				   * Apply padding.  We never want two chords directly adjacent,
 				   * so unconditionally add an extra space.
 				   */
-					if (word && word.length < chordlen) {
+				   	if (only_lyrics) {
+					} else if (word && word.length < chordlen) {
 						chords = chords + "&nbsp;";
 						lyrics = (dash == 1) ? lyrics + "-&nbsp;" : lyrics + "&nbsp&nbsp;";
 						for (i = chordlen - word.length - dash; i != 0; i--) {
@@ -136,7 +140,9 @@ function parseChordPro(template, key, transpose) {
 					chords = chords + '<span class="chord" data-original-val="' + chord + '">' + chord + '</span>';
 				}
 			}, this);
-			buffer.push('<span class="line">' + chords + "<br/>\n" + lyrics + "</span><br/>");
+			buffer.push('<span class="line">');
+			if(!only_lyrics) buffer.push(chords + "<br/>\n");
+			buffer.push(lyrics + "</span><br/>");
 			return;
 		}
 		/* Commands, ignored for now */
