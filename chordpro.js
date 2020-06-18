@@ -88,7 +88,7 @@ function parseChordPro(template, key, transpose, only_lyrics) {
 		}
 		if (line.charAt(line.length-1)==":"){
 			console.log("Header line");
-			buffer.push('<span class="heading">'+line+'</span><br>');
+			buffer.push('<span class="cp-heading">'+line+'</span><br>');
 			return "";
 		}
 		/* Chord line */
