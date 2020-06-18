@@ -86,8 +86,9 @@ function parseChordPro(template, key, transpose=false, only_lyrics=false, nashvi
 		}
 	}
 	template.split("\n").forEach(function(line, linenum) {
+		line = line.trim();
 		if (!passed_blank_line){
-			if (line.trim().length==0){
+			if (line.length==0){
 				passed_blank_line = true;
 			}
 			return "";
