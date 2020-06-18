@@ -21,15 +21,11 @@
 
 
 /* Parse a ChordPro template */
-function parseChordPro(template, key, transpose, only_lyrics) {
-	if( typeof transpose == "undefined" ) {
-		transpose = false;
-	}
-	if( typeof only_lyrics == "undefined" ) {
-		only_lyrics = false;
-	}
+function parseChordPro(template, key, transpose=false, only_lyrics=false, nashville=false) {
+	
 	const all_keys = ["A", "Bb", "B", "Cb", "C", "C#", "Db", "D", "Eb", "E", "F", "F#", "Gb", "G", "Ab"];
 	const sep_keys = [["A", "Bb", "B", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab"],["A", "Bb", "Cb", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"]];
+	const sep_keys_C = [["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"],["C", "Db", "D", "Eb", "E","F", "Gb", "G", "Ab","A", "Bb", "Cb"]];
 	const notes = [['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'], ['A', 'Bb', 'Cb', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']];
 	var chordregex= /\[([^\]]*)\]/;
 	var inword    = /[a-z]$/;
@@ -69,9 +65,25 @@ function parseChordPro(template, key, transpose, only_lyrics) {
 			return 'XX';
 		});
 	}
+	var nashville_chord = function(chord){
+		var regex = /([A-Z][b#]?)/g;
+		return chord.replace( regex, function( $1 ) {
+			return ($1.charCodeAt()-4)%7+1;
+		});
+	}
 	if (!template) return "";
 	var transposed_is_b = is_bkey(transposed_key(key, transpose));
 	var passed_blank_line = false;
+	if(nashville){
+		transpose = sep_keys_C[sep_keys_C[0].indexOf(key.substring(0,2)) == -1?1:0].indexOf(key.substring(0,2));
+		transposed_is_b=false;
+		if (transpose == -1) transpose = sep_keys_C[sep_keys_C[0].indexOf(key[0]) == -1?1:0].indexOf(key[0]);
+		if (transpose == -1){
+			console.log("Nashville convert key error");
+		} else {
+			transpose = -transpose;
+		}
+	}
 	template.split("\n").forEach(function(line, linenum) {
 		if (!passed_blank_line){
 			if (line.trim().length==0){
@@ -132,9 +144,8 @@ function parseChordPro(template, key, transpose, only_lyrics) {
 				} else {
 					/* Chords */
 					chord = word.replace(/[[]]/, "");
-					if(transpose !== false) {
-						chord = transpose_chord(chord, transpose, transposed_is_b);
-					}
+					if(transpose !== false) chord = transpose_chord(chord, transpose, transposed_is_b);
+					if(nashville) chord = nashville_chord(chord);
 					chordlen = chord.length;
 					chords = chords + '<span class="chord" data-original-val="' + chord + '">' + chord + '</span>';
 				}
