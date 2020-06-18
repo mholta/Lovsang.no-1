@@ -71,6 +71,7 @@ function parseChordPro(template, key, transpose=false, only_lyrics=false, nashvi
 			return ($1.charCodeAt()-4)%7+1;
 		});
 	}
+	template = template.trim();
 	if (!template) return "";
 	var transposed_is_b = is_bkey(transposed_key(key, transpose));
 	var passed_blank_line = false;
