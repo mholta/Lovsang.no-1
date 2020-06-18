@@ -21,7 +21,10 @@
 
 
 /* Parse a ChordPro template */
-function parseChordPro(template, key, transpose=false, only_lyrics=false, nashville=false) {
+function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 transpose, 1 lyrics only, 2 nashville
+	if (mode != 1 && mode != 2){
+		mode = 0;
+	}
 	
 	const all_keys = ["A", "Bb", "B", "Cb", "C", "C#", "Db", "D", "Eb", "E", "F", "F#", "Gb", "G", "Ab"];
 	const sep_keys = [["A", "Bb", "B", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab"],["A", "Bb", "Cb", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"]];
@@ -75,7 +78,7 @@ function parseChordPro(template, key, transpose=false, only_lyrics=false, nashvi
 	if (!template) return "";
 	var transposed_is_b = is_bkey(transposed_key(key, transpose));
 	var passed_blank_line = false;
-	if(nashville){
+	if(mode==2){
 		transpose = sep_keys_C[sep_keys_C[0].indexOf(key.substring(0,2)) == -1?1:0].indexOf(key.substring(0,2));
 		transposed_is_b=false;
 		if (transpose == -1) transpose = sep_keys_C[sep_keys_C[0].indexOf(key[0]) == -1?1:0].indexOf(key[0]);
@@ -128,7 +131,7 @@ function parseChordPro(template, key, transpose=false, only_lyrics=false, nashvi
 				   * Apply padding.  We never want two chords directly adjacent,
 				   * so unconditionally add an extra space.
 				   */
-				   	if (only_lyrics) {
+				   	if (mode==1) {
 					} else if (word && word.length < chordlen) {
 						chords = chords + "&nbsp;";
 						lyrics = (dash == 1) ? lyrics + "-&nbsp;" : lyrics + "&nbsp&nbsp;";
@@ -147,13 +150,13 @@ function parseChordPro(template, key, transpose=false, only_lyrics=false, nashvi
 					/* Chords */
 					chord = word.replace(/[[]]/, "");
 					if(transpose !== false) chord = transpose_chord(chord, transpose, transposed_is_b);
-					if(nashville) chord = nashville_chord(chord);
+					if(mode==2) chord = nashville_chord(chord);
 					chordlen = chord.length;
 					chords = chords + '<span class="chord" data-original-val="' + chord + '">' + chord + '</span>';
 				}
 			}, this);
 			buffer.push('<span class="line">');
-			if(!only_lyrics) buffer.push(chords + "<br/>\n");
+			if(mode!=1) buffer.push(chords + "<br/>\n");
 			buffer.push(lyrics + "</span><br/>");
 			return;
 		}
