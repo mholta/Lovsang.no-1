@@ -71,23 +71,19 @@ function parseChordPro(template, key, transpose, only_lyrics) {
 	}
 	if (!template) return "";
 	var transposed_is_b = is_bkey(transposed_key(key, transpose));
-	console.log("transposed_key:" + transposed_key(key,transpose) + ", transposed_is_b:" + transposed_is_b);
 	var passed_blank_line = false;
 	template.split("\n").forEach(function(line, linenum) {
-		console.log("Line:"+line+"; pbl: "+passed_blank_line+"; length: "+line.length);
 		if (!passed_blank_line){
-			if (line.length==0){
+			if (line.trim().length==0){
 				passed_blank_line = true;
 			}
 			return "";
 		}
 		/* Comment, ignore */
 		if (line.match(/^#/)) {
-			console.log("Comment");
 			return "";
 		}
 		if (line.charAt(line.length-1)==":"){
-			console.log("Header line");
 			buffer.push('<span class="cp-heading">'+line+'</span><br>');
 			return "";
 		}
