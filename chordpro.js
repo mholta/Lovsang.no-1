@@ -21,8 +21,9 @@
 
 
 /* Parse a ChordPro template */
-function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 transpose, 1 lyrics only, 2 nashville
-	if (mode != 1 && mode != 2){
+function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 transpose, 1 lyrics only, 2 nashville cheat, 3 nashville clean
+	const validModes = [0,1,2,3];
+	if (validModes.indexOf(mode)==-1){
 		mode = 0;
 	}
 	
@@ -30,6 +31,7 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 	const sep_keys = [["A", "Bb", "B", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab"],["A", "Bb", "Cb", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"]];
 	const sep_keys_C = [["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"],["C", "Db", "D", "Eb", "E","F", "Gb", "G", "Ab","A", "Bb", "Cb"]];
 	const notes = [['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'], ['A', 'Bb', 'Cb', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']];
+	const nashville_cheats = ["2m", "3m", "6m", "7dim"]
 	var chordregex= /\[([^\]]*)\]/;
 	var inword    = /[a-z]$/;
 	var buffer    = [];
@@ -68,17 +70,21 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 			return 'XX';
 		});
 	}
-	var nashville_chord = function(chord){
+	var nashville_chord = function(chord, mode){
 		var regex = /([A-Z][b#]?)/g;
-		return chord.replace( regex, function( $1 ) {
+		var new_chord = chord.replace( regex, function( $1 ) {
 			return ($1.charCodeAt()-4)%7+1;
 		});
+		if(mode==3) nashville_cheats.forEach(function(cheat){
+				new_chord=new_chord.replace(new RegExp(cheat,"g"), cheat[0]);
+			});
+		return new_chord;
 	}
 	template = template.trim();
 	if (!template) return "";
 	var transposed_is_b = is_bkey(transposed_key(key, transpose));
 	var passed_blank_line = false;
-	if(mode==2){
+	if(mode==2 || mode==3){
 		transpose = sep_keys_C[sep_keys_C[0].indexOf(key.substring(0,2)) == -1?1:0].indexOf(key.substring(0,2));
 		transposed_is_b=false;
 		if (transpose == -1) transpose = sep_keys_C[sep_keys_C[0].indexOf(key[0]) == -1?1:0].indexOf(key[0]);
@@ -150,7 +156,7 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 					/* Chords */
 					chord = word.replace(/[[]]/, "");
 					if(transpose !== false) chord = transpose_chord(chord, transpose, transposed_is_b);
-					if(mode==2) chord = nashville_chord(chord);
+					if(mode==2 || mode==3) chord = nashville_chord(chord, mode);
 					chordlen = chord.length;
 					chords = chords + '<span class="chord" data-original-val="' + chord + '">' + chord + '</span>';
 				}
