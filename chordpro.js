@@ -31,7 +31,7 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 	const sep_keys = [["A", "Bb", "B", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab"],["A", "Bb", "Cb", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"]];
 	const sep_keys_C = [["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"],["C", "Db", "D", "Eb", "E","F", "Gb", "G", "Ab","A", "Bb", "Cb"]];
 	const notes = [['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'], ['A', 'Bb', 'Cb', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']];
-	const nashville_cheats = ["2m", "3m", "6m", "7dim"]
+	const nashville_cheats = ["2</span>m", "3</span>m", "6</span>m", "7</span>dim"]
 	var chordregex= /\[([^\]]*)\]/;
 	var inword    = /[a-z]$/;
 	var buffer    = [];
@@ -76,9 +76,17 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 			return ($1.charCodeAt()-4)%7+1;
 		});
 		if(mode==3) nashville_cheats.forEach(function(cheat){
-				new_chord=new_chord.replace(new RegExp(cheat,"g"), cheat[0]);
+				new_chord=new_chord.replace(new RegExp(cheat,"g"), cheat[0]+"</span>");
 			});
 		return new_chord;
+	}
+
+	var wrap_chord = function(chord){
+		var regex = /(\/?[A-Z][b#]?)/g;
+		var wrapped_chord = chord.replace(regex, function( $1 ) {
+			return "<span class='cp-chord-base'>" + $1 + "</span>";
+		});
+		return wrapped_chord;
 	}
 	template = template.trim();
 	if (!template) return "";
@@ -156,9 +164,10 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 					/* Chords */
 					chord = word.replace(/[[]]/, "");
 					if(transpose !== false) chord = transpose_chord(chord, transpose, transposed_is_b);
-					if(mode==2 || mode==3) chord = nashville_chord(chord, mode);
+					wrapped_chord = wrap_chord(chord);
+					if(mode==2 || mode==3) wrapped_chord = nashville_chord(wrapped_chord, mode);
 					chordlen = chord.length;
-					chords = chords + '<span class="chord" data-original-val="' + chord + '">' + chord + '</span>';
+					chords = chords + '<span class="chord" data-original-val="' + chord + '">' + wrapped_chord + '</span>';
 				}
 			}, this);
 			buffer.push('<span class="line">');
