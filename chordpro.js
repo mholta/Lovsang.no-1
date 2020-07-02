@@ -81,12 +81,14 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 		return new_chord;
 	}
 
-	var wrap_chord = function(chord){
+	var wrap_chord = function(chord, mode){
 		var regex = /(\/?[A-Z][b#]?)/g;
-		var wrapped_chord = chord.replace(regex, function( $1 ) {
-			return "<span class='cp-chord-base'>" + $1 + "</span>";
-		});
-		return wrapped_chord;
+		if(mode==2||mode==3){
+			return chord.replace(regex, function( $1 ) {
+				return "<span class='cp-chord-base'>" + $1 + "</span>";
+			});
+		}
+		return "<span class='cp-chord-base'>" + chord + "</span>";
 	}
 	template = template.trim();
 	if (!template) return "";
@@ -164,7 +166,7 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 					/* Chords */
 					chord = word.replace(/[[]]/, "");
 					if(transpose !== false) chord = transpose_chord(chord, transpose, transposed_is_b);
-					wrapped_chord = wrap_chord(chord);
+					wrapped_chord = wrap_chord(chord, mode);
 					if(mode==2 || mode==3) wrapped_chord = nashville_chord(wrapped_chord, mode);
 					chordlen = chord.length;
 					chords = chords + '<span class="chord" data-original-val="' + chord + '">' + wrapped_chord + '</span>';
