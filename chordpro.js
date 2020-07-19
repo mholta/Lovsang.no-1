@@ -94,6 +94,8 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 	if (!template) return "";
 	var transposed_is_b = is_bkey(transposed_key(key, transpose));
 	var passed_blank_line = false;
+	var passed_first_section = false;
+	var in_lyric_block = false;
 	if(mode==2 || mode==3){
 		transpose = sep_keys_C[sep_keys_C[0].indexOf(key.substring(0,2)) == -1?1:0].indexOf(key.substring(0,2));
 		transposed_is_b=false;
@@ -117,14 +119,21 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 			return "";
 		}
 		if (line.charAt(line.length-1)==":"){
-			buffer.push('<span class="cp-heading">'+line+'</span><br>');
+			if(in_lyric_block){
+				buffer.push('</div>');
+				in_lyric_block = false;
+			}
+			if(passed_first_section) buffer.push('</div>');
+			else passed_first_section = true;
+			buffer.push('<div class="cp-section"><span class="cp-heading">'+line+'</span><br>');
 			return "";
 		}
 		/* Chord line */
 		if (line.match(chordregex)) {
-			if( !buffer.length ) {
+			if( !in_lyric_block ) {
 				buffer.push('<div class="lyric_block">');
 				last_was_lyric = true;
+				in_lyric_block = true;
 			} else if( !last_was_lyric ) {
 				buffer.push('</div><div class="lyric_block">');
 				last_was_lyric = true;
@@ -222,5 +231,8 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 		/* Anything else */
 		buffer.push(line + "<br/>");
 	}, this);
+	if(passed_first_section){
+		buffer.push("</div>")
+	}
 	return buffer.join("\n");
 }
