@@ -96,6 +96,10 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 	var passed_blank_line = false;
 	var passed_first_section = false;
 	var in_lyric_block = false;
+	var meta_passed = false
+	var meta_block_open = false
+	var inside_extra_meta = false
+	var right_after_info = true
 	if(mode==2 || mode==3){
 		transpose = sep_keys_C[sep_keys_C[0].indexOf(key.substring(0,2)) == -1?1:0].indexOf(key.substring(0,2));
 		transposed_is_b=false;
@@ -108,12 +112,10 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 	}
 	template.split("\n").forEach(function(line, linenum) {
 		line = line.trim();
-		if (!passed_blank_line){
-			if (line.length==0){
-				passed_blank_line = true;
-			}
-			return "";
-		}
+		if (linenum == 0) buffer.push('<div class="cp-info-block"><div class="cp-title">'+line+'</div>')
+		if (linenum == 1) buffer.push('<div class="cp-artist">'+line+'</div>')
+    if (line == '') buffer.push('</div>')
+
 		/* Comment, ignore */
 		if (line.match(/^#/)) {
 			return "";
@@ -186,50 +188,80 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 			buffer.push(lyrics + "</span><br/>");
 			return;
 		}
-		/* Commands, ignored for now */
-		if (line.match(/^{.*}/)) {
-			if( !buffer.length ) {
-				buffer.push('<div class="command_block">');
+		/* Commands */
+		var metaRegex = /^(Key|key|Tempo|tempo|Time|time):\s*(.*)/
+		if (line.match(metaRegex)) {
+			if( !meta_passed ) {
+				console.log('!buffer.length')
+				buffer.push('<div class="cp-meta-block">');
 				last_was_lyric = false;
 			} else if( last_was_lyric ) {
-				buffer.push('</div><div class="command_block">');
+				console.log('else if')
+				buffer.push('</div><div class="cp-meta-block">');
 				last_was_lyric = false;
 			}
-			//ADD COMMAND PARSING HERE
-			//reference: http://tenbyten.com/software/songsgen/help/HtmlHelp/files_reference.htm
+			// ADD COMMAND PARSING HERE
+			// reference: http://tenbyten.com/software/songsgen/help/HtmlHelp/files_reference.htm
 			// implement basic formatted text commands
-			var matches = line.match(/^{(title|t|subtitle|st|comment|c):\s*(.*)}/, "i");
-			if( matches.length >= 3 ) {
+			// Regular ChordPro-formatting var matches = line.match(/^{(title|t|subtitle|st|comment|c):\s*(.*)}/, "i");
+			var matches = line.match(metaRegex, "i")
+			console.log(matches)
+			meta_passed = true
+
+			if( matches.length >= 3) {
 				var command = matches[1];
 				var text = matches[2];
+				if (command.toUpperCase() == 'KEY') text = transpose_chord(text, transpose, transposed_is_b)
 				var wrap="";
+				var pre=""
+				var post=""
 				//add more non-wrapping commands with this switch
 				switch( command ) {
-					case "title":
-					case "t":
-						command = "title";
-						wrap = "h1";
+					case "Key":
+					case "key":
+						pre = "Toneart "
+						command = "cp-meta cp-key"
+						wrap = "div"
 						break;
-					case "subtitle":
-					case "st":
-						command = "subtitle";
-						wrap = "h4";
+					case "Tempo":
+					case "tempo":
+						command = "cp-meta cp-tempo"
+						wrap = "span"
+						post = " BPM"
 						break;
-					case "comment":
-					case "c":
-						command = "comment";
-						wrap    = "em";
-						break;
+					case "Time":
+					case "time":
+						command = "cp-meta cp-time"
+						wrap    = "span"
+            break;
 				}
-				if( wrap ) {
-					buffer.push('<' + wrap + ' class="' + command + '">' + text + '</' + wrap + '>' );
+				if ( wrap ) {
+					/*if (type != 3 && command != 'cp-tempo') */buffer.push('<' + wrap + ' class="' + command + '">' + pre + text + post + '</' + wrap + '>');
 				}
 			}
+			
 			// work from here to add wrapping commands
 			return;
+		} 
+		else if (meta_passed) {
+			buffer.push('</div>')
+			meta_passed = false
+			buffer.push('<div class="cp-extra-meta-wrapper">')
+			inside_extra_meta = true
+			right_after_info = false
+		}
+
+		if (inside_extra_meta) {
+			if (line == '') {
+				right_after_info = true
+				inside_extra_meta = false
+			} 
+			if (right_after_info) buffer.push('</div>')
 		}
 		/* Anything else */
-		buffer.push(line + "<br/>");
+		if (linenum > 1 && ! right_after_info) buffer.push(line + "<br/>"); // To prevent from showing title and artist twice
+		if (right_after_info) right_after_info = false
+
 	}, this);
 	if(passed_first_section){
 		buffer.push("</div>")
