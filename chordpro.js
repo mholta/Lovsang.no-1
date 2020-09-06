@@ -192,11 +192,9 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 		var metaRegex = /^(Key|key|Tempo|tempo|Time|time):\s*(.*)/
 		if (line.match(metaRegex)) {
 			if( !meta_passed ) {
-				console.log('!buffer.length')
 				buffer.push('<div class="cp-meta-block">');
 				last_was_lyric = false;
 			} else if( last_was_lyric ) {
-				console.log('else if')
 				buffer.push('</div><div class="cp-meta-block">');
 				last_was_lyric = false;
 			}
@@ -205,7 +203,6 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 			// implement basic formatted text commands
 			// Regular ChordPro-formatting var matches = line.match(/^{(title|t|subtitle|st|comment|c):\s*(.*)}/, "i");
 			var matches = line.match(metaRegex, "i")
-			console.log(matches)
 			meta_passed = true
 
 			if( matches.length >= 3) {
