@@ -20,9 +20,10 @@
  //
 
  var get_transposed_key; //Will contain the transposed key
- 
+
 /* Parse a ChordPro template */
-function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 transpose, 1 lyrics only, 2 nashville cheat, 3 nashville clean
+function parseChordPro(template, key, mode=0, transpose=0) { //modes: 0 transpose, 1 lyrics only, 2 nashville cheat, 3 nashville clean
+	get_transposed_key = key;
 	const validModes = [0,1,2,3];
 	if (validModes.indexOf(mode)==-1){
 		mode = 0;
@@ -93,7 +94,7 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 	}
 	template = template.trim();
 	if (!template) return "";
-	get_transposed_key = transposed_key(key, transpose);
+	get_transposed_key = transpose?transposed_key(key, transpose):key;
 	var transposed_is_b = is_bkey(transposed_key(key, transpose));
 	var passed_blank_line = false;
 	var passed_first_section = false;
