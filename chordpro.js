@@ -19,7 +19,8 @@
 
  //
 
-
+ var get_transposed_key; //Will contain the transposed key
+ 
 /* Parse a ChordPro template */
 function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 transpose, 1 lyrics only, 2 nashville cheat, 3 nashville clean
 	const validModes = [0,1,2,3];
@@ -92,6 +93,7 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 	}
 	template = template.trim();
 	if (!template) return "";
+	get_transposed_key = transposed_key(key, transpose);
 	var transposed_is_b = is_bkey(transposed_key(key, transpose));
 	var passed_blank_line = false;
 	var passed_first_section = false;
@@ -171,7 +173,7 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 					} else if (word && word.length == chordlen && pos != last_chord_pos) {
 						chords = chords + "&nbsp;";
 						lyrics = (dash == 1) ? lyrics + "-" : lyrics + "&nbsp;";
-					} else if (word){
+					} else if (word && word.length > chordlen){
 						for (i = word.length - chordlen; i != 0; i--) {
 							chords = chords + "&nbsp;";
 						}
