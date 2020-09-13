@@ -114,7 +114,7 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 		line = line.trim();
 		if (linenum == 0) buffer.push('<div class="cp-info-block"><div class="cp-title">'+line+'</div>')
 		if (linenum == 1) buffer.push('<div class="cp-artist">'+line+'</div>')
-    if (line == '') buffer.push('</div>')
+   		if (line == '') buffer.push('</div>')
 
 		/* Comment, ignore */
 		if (line.match(/^#/)) {
@@ -143,7 +143,10 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 			var chords = "";
 			var lyrics = "";
 			var chordlen = 0;
-			line.split(chordregex).forEach(function(word, pos) {
+			var line_list = line.split(chordregex);
+			var last_chord_pos = line_list.length%2?line_list.length-1:line_list.length-2;
+			
+			line_list.forEach(function(word, pos) {
 				var dash = 0;
 				/* Lyrics */
 				if ((pos % 2) == 0) {
@@ -159,16 +162,16 @@ function parseChordPro(template, key, mode=0, transpose=false) { //modes: 0 tran
 				   * so unconditionally add an extra space.
 				   */
 				   	if (mode==1) {
-					} else if (word && word.length < chordlen) {
+					} else if (word && word.length < chordlen && pos != last_chord_pos) {
 						chords = chords + "&nbsp;";
 						lyrics = (dash == 1) ? lyrics + "-&nbsp;" : lyrics + "&nbsp&nbsp;";
 						for (i = chordlen - word.length - dash; i != 0; i--) {
 							lyrics = lyrics + "&nbsp;";
 						}
-					} else if (word && word.length == chordlen) {
+					} else if (word && word.length == chordlen && pos != last_chord_pos) {
 						chords = chords + "&nbsp;";
 						lyrics = (dash == 1) ? lyrics + "-" : lyrics + "&nbsp;";
-					} else if (word && word.length > chordlen) {
+					} else if (word){
 						for (i = word.length - chordlen; i != 0; i--) {
 							chords = chords + "&nbsp;";
 						}
