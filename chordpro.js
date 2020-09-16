@@ -117,8 +117,10 @@ function parseChordPro(template, key, mode=0, transpose=0) { //modes: 0 transpos
 		line = line.trim();
 		if (linenum == 0) buffer.push('<div class="cp-info-block"><div class="cp-title">'+line+'</div>')
 		if (linenum == 1) buffer.push('<div class="cp-artist">'+line+'</div>')
-   		if (line == '') buffer.push('</div>')
-
+		if (line == '') buffer.push('</div>')
+		
+		var isOneLiner = (line.startsWith("|") || line.startsWith("/")) ? true : false
+		
 		/* Comment, ignore */
 		if (line.match(/^#/)) {
 			return "";
@@ -134,7 +136,7 @@ function parseChordPro(template, key, mode=0, transpose=0) { //modes: 0 transpos
 			return "";
 		}
 		/* Chord line */
-		if (line.match(chordregex)) {
+		if (line.match(chordregex) && !isOneLiner) {
 			if( !in_lyric_block ) {
 				buffer.push('<div class="lyric_block">');
 				last_was_lyric = true;
@@ -166,17 +168,17 @@ function parseChordPro(template, key, mode=0, transpose=0) { //modes: 0 transpos
 				   */
 				   	if (mode==1) {
 					} else if (word && word.length < chordlen && pos != last_chord_pos) {
-						chords = chords + "&nbsp;";
+						chords += "&nbsp;";
 						lyrics = (dash == 1) ? lyrics + "-&nbsp;" : lyrics + "&nbsp&nbsp;";
 						for (i = chordlen - word.length - dash; i != 0; i--) {
-							lyrics = lyrics + "&nbsp;";
+							lyrics += "&nbsp;";
 						}
 					} else if (word && word.length == chordlen && pos != last_chord_pos) {
-						chords = chords + "&nbsp;";
+						chords += "&nbsp;";
 						lyrics = (dash == 1) ? lyrics + "-" : lyrics + "&nbsp;";
 					} else if (word && word.length > chordlen){
 						for (i = word.length - chordlen; i != 0; i--) {
-							chords = chords + "&nbsp;";
+							chords += "&nbsp;";
 						}
 					}
 				} else {
@@ -186,14 +188,52 @@ function parseChordPro(template, key, mode=0, transpose=0) { //modes: 0 transpos
 					wrapped_chord = wrap_chord(chord, mode);
 					if(mode==2 || mode==3) wrapped_chord = nashville_chord(wrapped_chord, mode);
 					chordlen = chord.length;
-					chords = chords + '<span class="chord" data-original-val="' + chord + '">' + wrapped_chord + '</span>';
+					chords += '<span class="chord" data-original-val="' + chord + '">' + wrapped_chord + '</span>';
 				}
 			}, this);
 			buffer.push('<span class="line">');
 			if(mode!=1) buffer.push(chords + "<br/>\n");
 			buffer.push(lyrics + "</span><br/>");
 			return;
+		} 
+
+		/* OneLiner */
+		else if (isOneLiner) { 
+			console.log('IsOneLiner', line)
+			if( !in_lyric_block ) {
+				buffer.push('<div class="lyric_block">');
+				last_was_lyric = true;
+				in_lyric_block = true;
+			} else if( !last_was_lyric ) {
+				buffer.push('</div><div class="lyric_block">');
+				last_was_lyric = true;
+			}
+			var chordLine = "";
+			var chordlen = 0;
+			var line_list = line.split(chordregex);
+			var last_chord_pos = line_list.length%2?line_list.length-1:line_list.length-2;
+			console.log(line_list)
+			line_list.forEach(function(word, pos) {
+				var dash = 0;
+				/* Lyrics */
+				if ((pos % 2) == 0) {
+					chordLine += word.replace(' ', "&nbsp;");
+				} else {
+					/* Chords */
+					chord = word.replace(/[[]]/, "");
+					if(transpose !== false) chord = transpose_chord(chord, transpose, transposed_is_b);
+					wrapped_chord = wrap_chord(chord, mode);
+					if(mode==2 || mode==3) wrapped_chord = nashville_chord(wrapped_chord, mode);
+					chordlen = chord.length;
+					chordLine = chordLine + '<span class="chord" data-original-val="' + chord + '">' + wrapped_chord + '</span>';
+				}
+			}, this);
+			buffer.push('<span class="line">');
+			if(mode!=1) buffer.push(chordLine + "<br/>\n");
+			buffer.push("</span><br/>");
+			return;
 		}
+
 		/* Commands */
 		var metaRegex = /^(Key|key|Tempo|tempo|Time|time):\s*(.*)/
 		if (line.match(metaRegex)) {
